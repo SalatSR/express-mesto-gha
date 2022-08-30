@@ -31,8 +31,8 @@ const deletCardById = (req, res) => {
       return res.status(200).send(card);
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        return res.status(400).send({ message: 'Передан некорректный ID пользователя' });
+      if (err.name === 'CastError') {
+        return res.status(400).send({ message: 'Переданы некорректные данные при создании карточки' });
       }
       return res.status(500).send({ message: 'Произошла ошибка на сервере', ...err });
     });
