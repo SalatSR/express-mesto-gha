@@ -13,7 +13,12 @@ const createCard = (req, res) => {
   const { name, link } = req.body;
   Card.create({ name, link, owner })
     .then((card) => res.status(200).send(card))
-    .catch((err) => res.status(500).send({ message: 'Произошла ошибка на сервере', ...err }));
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        return res.status(400).send({ message: 'Переданы некорректные данные при создании карточки' });
+      }
+      return res.status(500).send({ message: 'Произошла ошибка на сервере', ...err });
+    });
 };
 
 /** Удаляет карточку по _id */
@@ -47,7 +52,7 @@ const putLike = (req, res) => {
       return res.status(200).send(card);
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
+      if (err.name === 'CastError') {
         return res.status(400).send({ message: 'Переданы некорректные данные для постановки лайка' });
       }
       return res.status(500).send({ message: 'Произошла ошибка на сервере', ...err });
@@ -68,7 +73,7 @@ const deletLike = (req, res) => {
       return res.status(200).send(card);
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
+      if (err.name === 'CastError') {
         return res.status(400).send({ message: 'Переданы некорректные данные для снятия лайка' });
       }
       return res.status(500).send({ message: 'Произошла ошибка на сервере', ...err });
