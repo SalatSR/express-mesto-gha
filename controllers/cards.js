@@ -26,7 +26,7 @@ const deletCardById = (req, res) => {
       return res.status(200).send(card);
     })
     .catch((err) => {
-      if (err.name === 'CastError') {
+      if (err.name === 'ValidationError') {
         return res.status(400).send({ message: 'Передан некорректный ID пользователя' });
       }
       return res.status(500).send({ message: 'Произошла ошибка на сервере', ...err });
@@ -38,7 +38,7 @@ const putLike = (req, res) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
     { $addToSet: { likes: req.user._id } },
-    { new: true },
+    { new: true, runValidators: true },
   )
     .then((card) => {
       if (!card) {
@@ -47,7 +47,7 @@ const putLike = (req, res) => {
       return res.status(200).send(card);
     })
     .catch((err) => {
-      if (err.name === 'CastError') {
+      if (err.name === 'ValidationError') {
         return res.status(400).send({ message: 'Переданы некорректные данные для постановки лайка' });
       }
       return res.status(500).send({ message: 'Произошла ошибка на сервере', ...err });
@@ -59,7 +59,7 @@ const deletLike = (req, res) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
     { $pull: { likes: req.user._id } },
-    { new: true },
+    { new: true, runValidators: true },
   )
     .then((card) => {
       if (!card) {
@@ -68,7 +68,7 @@ const deletLike = (req, res) => {
       return res.status(200).send(card);
     })
     .catch((err) => {
-      if (err.name === 'CastError') {
+      if (err.name === 'ValidationError') {
         return res.status(400).send({ message: 'Переданы некорректные данные для снятия лайка' });
       }
       return res.status(500).send({ message: 'Произошла ошибка на сервере', ...err });

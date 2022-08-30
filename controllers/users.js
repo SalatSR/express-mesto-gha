@@ -34,7 +34,7 @@ const creatUser = async (req, res) => {
     const user = await User.create(req.body);
     return res.status(200).send(user);
   } catch (e) {
-    if (e.name === 'CastError') {
+    if (e.name === 'ValidationError') {
       return res.status(400).send({ message: 'Переданы некорректные данные при создании пользователя' });
     }
     return res.status(500).send({ message: 'Произошла ошибка на сервере', ...e });
