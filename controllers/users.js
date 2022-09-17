@@ -124,6 +124,10 @@ const getCurrentUser = (req, res, next) => {
 const login = (req, res, next) => {
   const { email, password } = req.body;
 
+  if (!email || !password) {
+    throw new AuthError('Пароль или почта некорректны');
+  }
+
   User.findOne({ email })
     .select('+password')
     .orFail(() => new Error('Пользователь не найден'))
