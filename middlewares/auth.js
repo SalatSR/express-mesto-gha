@@ -1,3 +1,17 @@
-// const auth = (req, res, next);
+const jwt = require('jsonwebtoken');
 
-// module.exports = auth;
+const auth = (req, res, next) => {
+  const token = req.cookies.jwt;
+  let payload;
+
+  try {
+    payload = jwt.verify(token, 'SECRET');
+  } catch (e) {
+    next(e);
+  }
+
+  req.user = payload;
+  next();
+};
+
+module.exports = auth;

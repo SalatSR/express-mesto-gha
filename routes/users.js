@@ -3,7 +3,6 @@ const router = require('express').Router();
 const {
   getUsers,
   getUserById,
-  createUser,
   patchProfile,
   patchAvatar,
   getCurrentUser,
@@ -20,7 +19,6 @@ const {
 
 router.get('/users', express.json(), getUsers);
 router.get('/users/:id', express.json(), getUserById);
-router.post('/users', express.json(), createUser);
 router.patch('/users/me', express.json(), patchProfile);
 router.patch('/users/me/avatar', express.json(), patchAvatar);
 router.get('/users/me', express.json(), getCurrentUser);
