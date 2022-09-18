@@ -2,9 +2,10 @@ const dotenv = require('dotenv');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
-const AuthError = require('../errors/AuthError');
-const NotFoundError = require('../errors/NotFoundError');
 const ValidationError = require('../errors/ValidationError');
+const AuthError = require('../errors/AuthError');
+const ForbiddenError = require('../errors/ForbiddenError');
+const NotFoundError = require('../errors/NotFoundError');
 const DuplicateError = require('../errors/DuplicateError');
 
 /** Возвращаем всех пользователей */
@@ -39,7 +40,7 @@ const createUser = (req, res, next) => {
   } = req.body;
 
   if (!email || !password) {
-    throw new AuthError('Пароль или почта некорректны');
+    throw new ValidationError('Переданы некорректные данные при cоздании пользователя');
   }
 
   bcrypt.hash(password, 10)
@@ -85,11 +86,11 @@ const patchProfile = (req, res, next) => {
   )
     .orFail(new Error('Пользователь по указанному _id не найден'))
     .then((data) => res.status(200).send(data))
-    .catch((err) => {
-      if (err.name === 'ValidationError' || err.name === 'CastError') {
+    .catch((e) => {
+      if (escape.name === 'ValidationError' || e.name === 'CastError') {
         throw new ValidationError('Переданы некорректные данные при обновлении профиля');
       }
-      throw new NotFoundError(err.message);
+      throw new NotFoundError(e.message);
     })
     .catch(next);
 };
@@ -135,7 +136,7 @@ const login = (req, res, next) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
-    throw new AuthError('Пароль или почта некорректны');
+    throw new ForbiddenError('Неправильная почта или пароль');
   }
 
   User.findOne({ email })
@@ -155,9 +156,12 @@ const login = (req, res, next) => {
             });
             res.send(user.toJSON());
           } else {
-            res.status(403).send('Пароль или почта некорректны');
+            throw new ForbiddenError('Неправильная почта или пароль');
           }
         });
+    })
+    .catch((e) => {
+      throw new AuthError(e.message);
     })
     .catch(next);
 };
