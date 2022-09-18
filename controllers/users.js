@@ -16,7 +16,7 @@ const getUsers = (req, res, next) => {
 
 /** Возвращает пользователя по _id */
 const getUserById = (req, res, next) => {
-  User.findById(req.params.id)
+  User.findById(req.user._id)
     .orFail(new Error('Пользователь по указанному _id не найден'))
     .then((user) => res.status(200).send(user))
     .catch((e) => {
@@ -65,7 +65,8 @@ const createUser = (req, res, next) => {
           }
         })
         .catch(next);
-    });
+    })
+    .catch(next);
 };
 
 /** Обновляет профиль */
@@ -117,7 +118,16 @@ const patchAvatar = (req, res, next) => {
 
 /** Возвращает информацию о текущем пользователе */
 const getCurrentUser = (req, res, next) => {
-
+  User.findById(req.params.id)
+    .orFail(new Error('Пользователь по указанному _id не найден'))
+    .then((user) => res.status(200).send(user))
+    .catch((e) => {
+      if (e.name === 'CastError') {
+        throw new ValidationError('Передан некорректный ID пользователя');
+      }
+      throw new NotFoundError(e.message);
+    })
+    .catch(next);
 };
 
 /** Создаём пользователя */
@@ -145,7 +155,7 @@ const login = (req, res, next) => {
             });
             res.send(user.toJSON());
           } else {
-            res.status(403).send('неправильный пароль');
+            res.status(403).send('Пароль или почта некорректны');
           }
         });
     })

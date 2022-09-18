@@ -17,10 +17,10 @@ const {
  * GET /users/me - возвращает информацию о текущем пользователе
  */
 
-router.get('/users', express.json(), getUsers);
-router.get('/users/:id', express.json(), getUserById);
-router.patch('/users/me', express.json(), patchProfile);
-router.patch('/users/me/avatar', express.json(), patchAvatar);
-router.get('/users/me', express.json(), getCurrentUser);
+router.get('/users', express.json(), getUsers); // getUsers
+router.get('/users/:id', express.json(), getUserById); // getProfile
+router.patch('/users/me', express.json(), patchProfile); // updateProfile
+router.patch('/users/me/avatar', express.json(), patchAvatar); // updateAvatar
+router.get('/users/me', express.json(), getCurrentUser); // getMyUser
 
 module.exports = router;
