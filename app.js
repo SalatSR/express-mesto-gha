@@ -34,11 +34,7 @@ app.use('/', cardRouter);
 /** Обработка ошибок */
 
 /** Ошибки celebrate */
-app.use(errors((e) => {
-  if (e.error === 'Bad Request') {
-    throw new ValidationError('Переданы некорректные данные при cоздании пользователя');
-  }
-}));
+app.use(errors());
 
 /** Ошибка 404 */
 app.use((req, res) => {
