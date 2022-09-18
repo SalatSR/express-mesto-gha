@@ -17,7 +17,7 @@ const getUsers = (req, res, next) => {
 
 /** Возвращает пользователя по _id */
 const getUserById = (req, res, next) => {
-  User.findById(req.user._id)
+  User.findById(req.params.id)
     .orFail(new Error('Пользователь по указанному _id не найден'))
     .then((user) => res.status(200).send(user))
     .catch((e) => {
@@ -119,7 +119,7 @@ const patchAvatar = (req, res, next) => {
 
 /** Возвращает информацию о текущем пользователе */
 const getCurrentUser = (req, res, next) => {
-  User.findById(req.params.id)
+  User.findById(req.user._id)
     .orFail(new Error('Пользователь по указанному _id не найден'))
     .then((user) => res.status(200).send(user))
     .catch((e) => {

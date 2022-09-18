@@ -6,6 +6,12 @@ const validateId = celebrate({
   }),
 });
 
+const validateCardId = celebrate({
+  params: Joi.object().keys({
+    cardId: Joi.string().alphanum().length(24).hex(),
+  }),
+});
+
 const validateCard = celebrate({
   body: Joi.object().keys({
     name: Joi.string().required().min(2).max(30),
@@ -50,4 +56,5 @@ module.exports = {
   validateUserAvatar,
   validateSignUp,
   validateSignIn,
+  validateCardId,
 };

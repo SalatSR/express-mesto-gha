@@ -15,17 +15,17 @@ const {
 
 /**
  * GET /users — возвращает всех пользователей
+ * GET /users/me - возвращает информацию о текущем пользователе
  * GET /users/:userId - возвращает пользователя по _id
  * POST /users — создаёт пользователя
  * PATCH /users/me — обновляет профиль
  * PATCH /users/me/avatar — обновляет аватар
- * GET /users/me - возвращает информацию о текущем пользователе
  */
 
 router.get('/users', express.json(), getUsers);
-router.get('/users/me', express.json(), validateUserAvatar, getCurrentUser);
+router.get('/users/me', express.json(), getCurrentUser);
 router.get('/users/:id', express.json(), validateId, getUserById);
 router.patch('/users/me', express.json(), validateUserInfo, patchProfile);
-router.patch('/users/me/avatar', express.json(), patchAvatar);
+router.patch('/users/me/avatar', express.json(), validateUserAvatar, patchAvatar);
 
 module.exports = router;
