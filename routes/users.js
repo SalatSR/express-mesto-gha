@@ -1,6 +1,10 @@
 const express = require('express');
 const router = require('express').Router();
-const { celebrate, Joi, error } = require('celebrate');
+const {
+  validateId,
+  validateUserInfo,
+  validateUserAvatar,
+} = require('../middlewares/validation');
 const {
   getUsers,
   getUserById,
@@ -18,10 +22,10 @@ const {
  * GET /users/me - возвращает информацию о текущем пользователе
  */
 
-router.get('/users', express.json(), getUsers); // getUsers
-router.get('/users/:id', express.json(), getUserById); // getProfile
-router.patch('/users/me', express.json(), patchProfile); // updateProfile
-router.patch('/users/me/avatar', express.json(), patchAvatar); // updateAvatar
-router.get('/users/me', express.json(), getCurrentUser); // getMyUser
+router.get('/users', express.json(), getUsers);
+router.get('/users/:id', express.json(), validateId, getUserById);
+router.patch('/users/me', express.json(), validateUserInfo, patchProfile);
+router.patch('/users/me/avatar', express.json(), patchAvatar);
+router.get('/users/me', express.json(), validateUserAvatar, getCurrentUser);
 
 module.exports = router;

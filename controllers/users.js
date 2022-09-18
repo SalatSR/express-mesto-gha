@@ -87,7 +87,7 @@ const patchProfile = (req, res, next) => {
     .orFail(new Error('Пользователь по указанному _id не найден'))
     .then((data) => res.status(200).send(data))
     .catch((e) => {
-      if (escape.name === 'ValidationError' || e.name === 'CastError') {
+      if (e.name === 'ValidationError' || e.name === 'CastError') {
         throw new ValidationError('Переданы некорректные данные при обновлении профиля');
       }
       throw new NotFoundError(e.message);
@@ -131,7 +131,7 @@ const getCurrentUser = (req, res, next) => {
     .catch(next);
 };
 
-/** Создаём пользователя */
+/** Авторизуем пользователя */
 const login = (req, res, next) => {
   const { email, password } = req.body;
 
