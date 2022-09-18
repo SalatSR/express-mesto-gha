@@ -23,9 +23,9 @@ const {
  */
 
 router.get('/users', express.json(), getUsers);
+router.get('/users/me', express.json(), validateUserAvatar, getCurrentUser);
 router.get('/users/:id', express.json(), validateId, getUserById);
 router.patch('/users/me', express.json(), validateUserInfo, patchProfile);
 router.patch('/users/me/avatar', express.json(), patchAvatar);
-router.get('/users/me', express.json(), validateUserAvatar, getCurrentUser);
 
 module.exports = router;
