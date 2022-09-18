@@ -78,16 +78,13 @@ const deletLike = (req, res, next) => {
       runValidators: true,
     },
   )
-    .then((card) => {
-      if (!card) {
-        throw new NotFoundError('Передан несуществующий _id карточки');
-      }
-      return res.status(200).send(card);
-    })
+    .orFail(new Error('Передан несуществующий _id карточки'))
+    .then((card) => res.status(200).send(card))
     .catch((err) => {
       if (err.name === 'CastError') {
         throw new ValidationError('Переданы некорректные данные для снятия лайка');
       }
+      throw new NotFoundError('Передан несуществующий _id карточки');
     })
     .catch(next);
 };
