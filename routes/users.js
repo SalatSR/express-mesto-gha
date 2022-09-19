@@ -1,4 +1,3 @@
-const express = require('express');
 const router = require('express').Router();
 const {
   validateId,
@@ -22,10 +21,10 @@ const {
  * PATCH /users/me/avatar — обновляет аватар
  */
 
-router.get('/users', express.json(), getUsers);
-router.get('/users/me', express.json(), getCurrentUser);
-router.get('/users/:id', express.json(), validateId, getUserById);
-router.patch('/users/me', express.json(), validateUserInfo, patchProfile);
-router.patch('/users/me/avatar', express.json(), validateUserAvatar, patchAvatar);
+router.get('/users', getUsers);
+router.get('/users/me', getCurrentUser);
+router.get('/users/:id', validateId, getUserById);
+router.patch('/users/me', validateUserInfo, patchProfile);
+router.patch('/users/me/avatar', validateUserAvatar, patchAvatar);
 
 module.exports = router;

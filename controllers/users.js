@@ -1,32 +1,30 @@
-const dotenv = require('dotenv');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const ValidationError = require('../errors/ValidationError');
 const AuthError = require('../errors/AuthError');
-const ForbiddenError = require('../errors/ForbiddenError');
 const NotFoundError = require('../errors/NotFoundError');
 const DuplicateError = require('../errors/DuplicateError');
 
 /** Возвращаем всех пользователей */
 const getUsers = (req, res, next) => {
   User.find({})
-    .then((users) => res.status(200).send(users))
+    .then((users) => res.send(users))
     .catch(next);
 };
 
 /** Возвращает пользователя по _id */
 const getUserById = (req, res, next) => {
   User.findById(req.params.id)
-    .orFail(new Error('Пользователь по указанному _id не найден'))
-    .then((user) => res.status(200).send(user))
+    .orFail(() => new NotFoundError('Пользователь с указанным id не существует'))
+    .then((user) => res.send(user))
     .catch((e) => {
       if (e.name === 'CastError') {
-        throw new ValidationError('Передан некорректный ID пользователя');
+        next(new ValidationError('Передан некорректный ID пользователя'));
+      } else {
+        next(e);
       }
-      throw new NotFoundError(e.message);
-    })
-    .catch(next);
+    });
 };
 
 /** Создаёт пользователя */
@@ -39,10 +37,6 @@ const createUser = (req, res, next) => {
     password,
   } = req.body;
 
-  if (!email || !password) {
-    throw new ValidationError('Переданы некорректные данные при cоздании пользователя');
-  }
-
   bcrypt.hash(password, 10)
     .then((hashedPassword) => {
       User.create({
@@ -52,7 +46,7 @@ const createUser = (req, res, next) => {
         email,
         password: hashedPassword,
       })
-        .then((user) => res.status(200).send({
+        .then((user) => res.send({
           name,
           about,
           avatar,
@@ -60,12 +54,13 @@ const createUser = (req, res, next) => {
         }))
         .catch((e) => {
           if (e.name === 'MongoServerError' || e.code === 11000) {
-            throw new DuplicateError('Пользователь с таким email уже существует');
+            next(new DuplicateError('Пользователь с таким email уже существует'));
           } else if (e.name === 'ValidationError' || e.name === 'CastError') {
-            throw new ValidationError('Переданы некорректные данные при cоздании пользователя');
+            next(new ValidationError('Переданы некорректные данные при cоздании пользователя'));
+          } else {
+            next(e);
           }
-        })
-        .catch(next);
+        });
     })
     .catch(next);
 };
@@ -84,15 +79,15 @@ const patchProfile = (req, res, next) => {
       runValidators: true, // валидация данных перед изменением
     },
   )
-    .orFail(new Error('Пользователь по указанному _id не найден'))
-    .then((data) => res.status(200).send(data))
+    .orFail(() => new NotFoundError('Пользователь с указанным id не существует'))
+    .then((data) => res.send(data))
     .catch((e) => {
       if (e.name === 'ValidationError' || e.name === 'CastError') {
-        throw new ValidationError('Переданы некорректные данные при обновлении профиля');
+        next(new ValidationError('Переданы некорректные данные при обновлении профиля'));
+      } else {
+        next(e);
       }
-      throw new NotFoundError(e.message);
-    })
-    .catch(next);
+    });
 };
 
 /** Обновляет аватар */
@@ -106,43 +101,39 @@ const patchAvatar = (req, res, next) => {
       runValidators: true,
     },
   )
-    .orFail(() => new Error('Пользователь с указанным _id не найден'))
-    .then((user) => res.status(200).send(user))
+    .orFail(() => new NotFoundError('Пользователь с указанным id не существует'))
+    .then((user) => res.send(user))
     .catch((e) => {
       if (e.name === 'ValidationError' || e.name === 'CastError') {
-        throw new ValidationError('Переданы некорректные данные при обновлении аватара');
+        next(new ValidationError('Переданы некорректные данные при обновлении аватара'));
+      } else {
+        next(e);
       }
-      throw new NotFoundError(e.message);
-    })
-    .catch(next);
+    });
 };
 
 /** Возвращает информацию о текущем пользователе */
 const getCurrentUser = (req, res, next) => {
   User.findById(req.user._id)
-    .orFail(new Error('Пользователь по указанному _id не найден'))
-    .then((user) => res.status(200).send(user))
+    .orFail(() => new NotFoundError('Пользователь с указанным id не существует'))
+    .then((user) => res.send(user))
     .catch((e) => {
       if (e.name === 'CastError') {
         throw new ValidationError('Передан некорректный ID пользователя');
+      } else {
+        next(e);
       }
-      throw new NotFoundError(e.message);
-    })
-    .catch(next);
+    });
 };
 
 /** Авторизуем пользователя */
 const login = (req, res, next) => {
   const { email, password } = req.body;
 
-  if (!email || !password) {
-    throw new ForbiddenError('Неправильная почта или пароль');
-  }
-
   User.findOne({ email })
     .select('+password')
-    .orFail(() => new Error('Пользователь не найден'))
-    .then((user) => {
+    .orFail(() => new Error('Неправильная почта или пароль'))
+    .then((user) => (
       bcrypt.compare(password, user.password)
         .then((isUserValid) => {
           if (isUserValid) {
@@ -156,13 +147,10 @@ const login = (req, res, next) => {
             });
             res.send(user.toJSON());
           } else {
-            throw new ForbiddenError('Неправильная почта или пароль');
+            next(new AuthError('Неправильная почта или пароль'));
           }
-        });
-    })
-    .catch((e) => {
-      throw new AuthError(e.message);
-    })
+        })
+    ))
     .catch(next);
 };
 

@@ -9,6 +9,7 @@ const { createUser, login } = require('./controllers/users');
 const { validateSignUp, validateSignIn } = require('./middlewares/validation');
 const ValidationError = require('./errors/ValidationError');
 const auth = require('./middlewares/auth');
+const NotFoundError = require('./errors/NotFoundError');
 
 dotenv.config();
 const { PORT = 3000 } = process.env;
@@ -21,8 +22,10 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
   useUnifiedTopology: false,
 });
 
-app.post('/signup', express.json(), validateSignUp, createUser);
-app.post('/signin', express.json(), validateSignIn, login);
+app.use(express.json());
+
+app.post('/signup', validateSignUp, createUser);
+app.post('/signin', validateSignIn, login);
 
 app.use(cookieParser());
 app.use(auth);
@@ -37,8 +40,8 @@ app.use('/', cardRouter);
 app.use(errors());
 
 /** Ошибка 404 */
-app.use((req, res) => {
-  res.status(404).send({ message: 'Страница не найдена' });
+app.use((req, res, next) => {
+  next(new NotFoundError('Страница не найдена'));
 });
 
 /** Централизованнный обработчик ошибок */

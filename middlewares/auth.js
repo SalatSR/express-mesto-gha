@@ -8,10 +8,7 @@ const auth = (req, res, next) => {
   try {
     payload = jwt.verify(token, 'SECRET');
   } catch (e) {
-    if (e.name === 'JsonWebTokenError') {
-      throw new AuthError('Пароль или почта некорректны');
-    }
-    next(e);
+    next(new AuthError('Пароль или почта некорректны'));
   }
 
   req.user = payload;

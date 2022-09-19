@@ -6,7 +6,7 @@ const ForbiddenError = require('../errors/ForbiddenError');
 /** Возвращает все карточки */
 const getCards = (req, res, next) => {
   Card.find({})
-    .then((cards) => res.status(200).send(cards))
+    .then((cards) => res.send(cards))
     .catch(next);
 };
 
@@ -15,34 +15,29 @@ const createCard = (req, res, next) => {
   const owner = req.user._id;
   const { name, link } = req.body;
   Card.create({ name, link, owner })
-    .then((card) => res.status(200).send(card))
+    .then((card) => res.status(201).send(card))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        throw new ValidationError('Переданы некорректные данные при создании карточки');
+        next(new ValidationError('Переданы некорректные данные при создании карточки'));
+      } else {
+        next(err);
       }
-    })
-    .catch(next);
+    });
 };
 
 /** Удаляет карточку по _id */
 const deletCardById = (req, res, next) => {
   const userId = req.user._id;
   Card.findById(req.params.cardId)
-    .orFail(new Error('Нет такой карточки'))
+    .orFail(() => new NotFoundError('Передан несуществующий _id карточки'))
     .then((card) => {
-      if (!card) {
-        throw new NotFoundError('Карточка с указанным _id не найдена');
-      }
       if (card.owner.toString() !== userId) {
-        next(new ForbiddenError('Вы не можете удалить чужую карточку'));
+        return next(new ForbiddenError('Вы не можете удалить чужую карточку'));
       }
 
-      Card.findByIdAndDelete(req.params.cardId)
-        .then((data) => res.status(200).send(data))
+      return Card.findByIdAndDelete(req.params.cardId)
+        .then((data) => res.send(data))
         .catch(next);
-    })
-    .catch((err) => {
-      throw new NotFoundError(err.message);
     })
     .catch(next);
 };
@@ -57,15 +52,15 @@ const putLike = (req, res, next) => {
       runValidators: true,
     },
   )
-    .orFail(new Error('Передан несуществующий _id карточки'))
-    .then((card) => res.status(200).send(card))
+    .orFail(() => new NotFoundError('Передан несуществующий _id карточки'))
+    .then((card) => res.send(card))
     .catch((err) => {
       if (err.name === 'CastError') {
-        throw new ValidationError('Переданы некорректные данные для постановки лайка');
+        next(new ValidationError('Переданы некорректные данные для постановки лайка'));
+      } else {
+        next(err);
       }
-      throw new NotFoundError(err.message);
-    })
-    .catch(next);
+    });
 };
 
 /** Убрать лайк с карточки */
@@ -78,15 +73,15 @@ const deletLike = (req, res, next) => {
       runValidators: true,
     },
   )
-    .orFail(new Error('Передан несуществующий _id карточки'))
-    .then((card) => res.status(200).send(card))
+    .orFail(() => new NotFoundError('Передан несуществующий _id карточки'))
+    .then((card) => res.send(card))
     .catch((err) => {
       if (err.name === 'CastError') {
-        throw new ValidationError('Переданы некорректные данные для снятия лайка');
+        next(new ValidationError('Переданы некорректные данные для снятия лайка'));
+      } else {
+        next(err);
       }
-      throw new NotFoundError('Передан несуществующий _id карточки');
-    })
-    .catch(next);
+    });
 };
 
 module.exports = {
