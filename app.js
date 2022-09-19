@@ -33,6 +33,9 @@ app.use(auth);
 /** Защищённые маршруты */
 app.use('/', userRouter);
 app.use('/', cardRouter);
+app.get('/signout', (req, res) => {
+  res.clearCookie('jwt').send({ message: 'Выход' });
+});
 
 /** Обработка ошибок */
 
