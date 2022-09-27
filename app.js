@@ -7,6 +7,7 @@ const userRouter = require('./routes/users');
 const cardRouter = require('./routes/cards');
 const { createUser, login } = require('./controllers/users');
 const { validateSignUp, validateSignIn } = require('./middlewares/validation');
+const { requireLogger, errorLogger } = require('./middlewares/logger');
 const ValidationError = require('./errors/ValidationError');
 const auth = require('./middlewares/auth');
 const NotFoundError = require('./errors/NotFoundError');
@@ -22,7 +23,11 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
   useUnifiedTopology: false,
 });
 
+/** Конвертируем запросы в формат json */
 app.use(express.json());
+
+/** Логгер запросов */
+app.use(requireLogger);
 
 app.post('/signup', validateSignUp, createUser);
 app.post('/signin', validateSignIn, login);
@@ -36,6 +41,9 @@ app.use('/', cardRouter);
 app.get('/signout', (req, res) => {
   res.clearCookie('jwt').send({ message: 'Выход' });
 });
+
+/** Логгер ошибок */
+app.use(errorLogger);
 
 /** Обработка ошибок */
 
